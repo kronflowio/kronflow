@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface NamespaceStore {
-    void create(Namespace namespace);
+    void createNamespace(Namespace namespace);
 
-    void update(String namespaceId, Namespace namespace);
+    void updateNamespace(String namespaceId, Namespace namespace);
 
-    Optional<Namespace> findById(String namespaceId);
+    Optional<Namespace> findNamespaceById(String namespaceId);
 
-    List<Namespace> findAll();
+    List<Namespace> findAllNamespaces();
 
-    void delete(String namespaceId);
+    void deleteNamespace(String namespaceId);
 
-    boolean existsById(String namespaceId);
+    boolean existsNamespaceById(String namespaceId);
 
-    boolean existsByName(String name);
+    boolean existsNamespaceByName(String name);
 }

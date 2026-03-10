@@ -17,43 +17,44 @@ public class NamespaceService {
         this.idGenerator = idGenerator;
     }
 
-    public void createNamespace(String name, String description, String createdBy, String updatedBy) {
-        if (store.existsByName(name)) {
-            throw new DuplicateNameException("Namespace already exists!");
+    public Namespace createNamespace(String name, String description, String createdBy, String updatedBy) {
+        if (store.existsNamespaceByName(name)) {
+            throw new DuplicateNameException("Namespace already exists: " + name);
         }
 
         Namespace namespace = new Namespace(idGenerator.generateId(), name, description, createdBy, updatedBy);
-        store.create(namespace);
+        store.createNamespace(namespace);
+        return namespace;
     }
 
-    public void updateNameSpace(String id, String name, String description, String updatedBy) {
-        if (!store.existsById(id)) {
-            throw new IllegalStateException("Namespace doesn't exist!");
+    public Namespace updateNameSpace(String namespaceId, String name, String description, String updatedBy) {
+        Namespace namespace = store.findNamespaceById(namespaceId)
+                .orElseThrow(() -> new IllegalStateException("Namespace doesn't exist: " + namespaceId));
+
+        if (!namespace.getName().equals(name) && store.existsNamespaceByName(name)) {
+            throw new DuplicateNameException("Namespace already exists: " + namespaceId);
         }
 
-        if (store.existsByName(name)) {
-            throw new DuplicateNameException("Namespace with the same name exists!");
-        }
-
-        Namespace namespace = store.findById(id).get();
         namespace.rename(name);
         namespace.updateDescription(description);
         namespace.modifyUpdatedBy(updatedBy);
 
-        store.update(id, namespace);
+        store.updateNamespace(namespaceId, namespace);
+        return namespace;
     }
 
     public Optional<Namespace> getNamespaceById(String id) {
-        return store.findById(id);
+        return store.findNamespaceById(id);
     }
 
     public List<Namespace> getAllNamespaces() {
-        return store.findAll();
+        return store.findAllNamespaces();
     }
 
     public void deleteNamespace(String namespaceId) {
-        if (store.existsById(namespaceId)) {
-            store.delete(namespaceId);
+        if (!store.existsNamespaceById(namespaceId)) {
+            throw new IllegalStateException("Namespace doesn't exist: " + namespaceId);
         }
+        store.deleteNamespace(namespaceId);
     }
 }
