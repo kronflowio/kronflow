@@ -7,9 +7,16 @@ import java.util.Optional;
 
 public interface NamespaceStore {
     void create(Namespace namespace);
+
     void update(String namespaceId, Namespace namespace);
+
     Optional<Namespace> findById(String namespaceId);
+
     List<Namespace> findAll();
+
     void delete(String namespaceId);
+
     boolean existsById(String namespaceId);
+
+    boolean existsByName(String name);
 }

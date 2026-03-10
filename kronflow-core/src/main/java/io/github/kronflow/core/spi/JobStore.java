@@ -16,7 +16,7 @@ public interface JobStore {
 
     List<JobDefinition> finalAllByNamespace(String namespaceId);
 
-    Optional<JobDefinition> findByNameAndNamespace(String name, String namespaceId);
+    Optional<JobDefinition> findByNameSpaceAndName(String namespaceId, String name);
 
     List<JobDefinition> findByStatus(Namespace namespace, JobStatus status);
 
