@@ -3,18 +3,18 @@ package io.github.kronflow.core.model.value;
 import io.github.kronflow.core.exception.InvalidCronExpressionException;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 public final class CronExpression {
 
-    // Matches 6-field (sec min hr dom mon dow) or 7-field (+ year) cron expressions
-    private static final Pattern CRON_PATTERN = Pattern.compile(
-            "(@(annually|yearly|monthly|weekly|daily|hourly|reboot))" +
-                    "|((@every)(\\s+)(\\d+(ns|us|µs|ms|s|m|h))+)" +
-                    "|(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*|\\?) " +
-                    "{5,6}" +
-                    "(\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*|\\?)"
-    );
+    private static final int FIELD_COUNT = 6;
+
+    // field indices
+    private static final int IDX_SECONDS = 0;
+    private static final int IDX_MINUTES = 1;
+    private static final int IDX_HOURS   = 2;
+    private static final int IDX_DOM     = 3;
+    private static final int IDX_MONTH   = 4;
+    private static final int IDX_DOW     = 5;
 
     private final String expression;
 
@@ -25,31 +25,72 @@ public final class CronExpression {
 
     private String validate(String expr) {
         String[] parts = expr.split("\\s+");
-        if (parts.length < 5 || parts.length > 7) {
+
+        if (parts.length != FIELD_COUNT) {
             throw new InvalidCronExpressionException(
-                    "Cron expression must have 5, 6, or 7 fields, got: " + parts.length + " in [" + expr + "]"
+                    "Kronflow requires a 6-field cron expression " +
+                            "(sec min hr dom mon dow), got " + parts.length + " fields in [" + expr + "]"
             );
         }
-        // field-level range validation
-        validateField(parts[0], 0, 59, "seconds/minutes");
-        validateField(parts[1], 0, 59, "minutes");
-        validateField(parts[2], 0, 23, "hours");
-        // TODO: dom and month are structural — skip deep range check for now
+
+        validateRangeField(parts[IDX_SECONDS], 0,  59, "seconds");
+        validateRangeField(parts[IDX_MINUTES], 0,  59, "minutes");
+        validateRangeField(parts[IDX_HOURS],   0,  23, "hours");
+        validateRangeField(parts[IDX_DOM],     1,  31, "day-of-month");
+        validateRangeField(parts[IDX_MONTH],   1,  12, "month");
+        validateRangeField(parts[IDX_DOW],     0,   7, "day-of-week");
+
         return expr;
     }
 
-    private void validateField(String field, int min, int max, String fieldName) {
+    /**
+     * Validates a single cron field against an allowed numeric range.
+     * Wildcards (* and ?), steps (slash), ranges (dash), and lists (comma)
+     * are accepted without deep validation — structural correctness is
+     * enforced at execution time by the trigger engine.
+     */
+    private void validateRangeField(String field, int min, int max, String fieldName) {
         if ("*".equals(field) || "?".equals(field)) return;
+
+        // steps: */5 or 0/5 — validate the base if numeric
+        if (field.contains("/")) {
+            String base = field.split("/")[0];
+            if (!"*".equals(base)) validateNumeric(base, min, max, fieldName);
+            return;
+        }
+
+        // ranges: 1-5 — validate both bounds
+        if (field.contains("-")) {
+            String[] bounds = field.split("-");
+            validateNumeric(bounds[0], min, max, fieldName);
+            validateNumeric(bounds[1], min, max, fieldName);
+            return;
+        }
+
+        // lists: 1,2,3 — validate each value
+        if (field.contains(",")) {
+            for (String part : field.split(",")) {
+                validateNumeric(part.trim(), min, max, fieldName);
+            }
+            return;
+        }
+
+        // plain numeric
+        validateNumeric(field, min, max, fieldName);
+    }
+
+    private void validateNumeric(String value, int min, int max, String fieldName) {
         try {
-            int value = Integer.parseInt(field);
-            if (value < min || value > max) {
+            int num = Integer.parseInt(value);
+            if (num < min || num > max) {
                 throw new InvalidCronExpressionException(
-                        "Field '" + fieldName + "' value " + value +
-                                " is out of range [" + min + "-" + max + "]"
+                        "Field '" + fieldName + "' value " + num + " is out of range [" + min + "-" + max + "]"
                 );
             }
         } catch (NumberFormatException e) {
-            // TODO: slashes and commas are valid - skip for now, deeper validation can be added later
+            throw new InvalidCronExpressionException(
+                    "Field '" + fieldName + "' contains invalid value: '" + value + "'"
+            );
         }
     }
 

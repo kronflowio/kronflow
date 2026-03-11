@@ -4,6 +4,7 @@
         <groupId>io.github.kronflow</groupId>
         <artifactId>kronflow</artifactId>
         <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>kronflow-core</artifactId>
     <packaging>jar</packaging>
