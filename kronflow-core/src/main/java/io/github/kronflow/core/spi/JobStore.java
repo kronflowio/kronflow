@@ -14,13 +14,13 @@ public interface JobStore {
 
     Optional<JobDefinition> findById(String jobId);
 
-    List<JobDefinition> finalAllByNamespace(String namespaceId);
+    boolean existsById(String jobId);
 
-    Optional<JobDefinition> findByNameSpaceAndName(String namespaceId, String name);
+    List<JobDefinition> findAllByNamespace(String namespaceId);
+
+    Optional<JobDefinition> findByNamespaceAndName(String namespaceId, String name);
 
     List<JobDefinition> findByStatus(Namespace namespace, JobStatus status);
 
     void deleteById(String jobId);
-
-    boolean existsById(String jobId);
 }

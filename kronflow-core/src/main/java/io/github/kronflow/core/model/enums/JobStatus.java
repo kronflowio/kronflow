@@ -9,7 +9,11 @@ public enum JobStatus {
         return this == DELETED;
     }
 
-    public boolean isSchedulable() {
+    public boolean isPaused() {
+        return this == PAUSED;
+    }
+
+    public boolean isActive() {
         return this == ACTIVE;
     }
 }
