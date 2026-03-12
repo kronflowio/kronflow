@@ -26,7 +26,7 @@ class JobDefinitionTest {
     @BeforeEach
     void setUp() {
         schedule    = new CronExpression("0 * * * * *");
-        retryPolicy = new RetryPolicy(3, 1000L, 2);
+        retryPolicy = new RetryPolicy(3, 1000L, 2.0);
         job = new JobDefinition(
                 ID, NAMESPACE_ID, CREATED_BY,
                 NAME, DESCRIPTION, HANDLER,
@@ -285,7 +285,7 @@ class JobDefinitionTest {
 
         @Test
         void shouldUpdateRetryPolicy() {
-            RetryPolicy newPolicy = new RetryPolicy(5, 2000L, 2);
+            RetryPolicy newPolicy = new RetryPolicy(5, 2000L, 2.0);
             job.updateRetryPolicy(newPolicy, "admin");
             assertEquals(newPolicy, job.getRetryPolicy());
         }
