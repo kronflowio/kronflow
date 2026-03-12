@@ -17,7 +17,7 @@ public abstract class BaseEntity {
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt; // on creation, updatedAt defaults to createdAt
         this.createdBy = createdBy != null ? createdBy : "system";
-        this.updatedBy = createdBy; // on creation, updatedBy defaults to createdBy
+        this.updatedBy = this.createdBy; // on creation, updatedBy defaults to createdBy
     }
 
     public String getId() {

@@ -19,7 +19,7 @@ public final class Namespace {
         this.description = description;
         this.createdAt = Instant.now();
         this.createdBy = createdBy != null ? createdBy : "system";
-        this.updatedBy = updatedBy != null ? updatedBy : createdBy;
+        this.updatedBy = updatedBy != null ? updatedBy : this.createdBy;
         this.updatedAt = this.createdAt;
         this.active = true;
     }
