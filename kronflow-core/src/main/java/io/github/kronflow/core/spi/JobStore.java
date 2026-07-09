@@ -1,7 +1,6 @@
 package io.github.kronflow.core.spi;
 
 import io.github.kronflow.core.model.JobDefinition;
-import io.github.kronflow.core.model.Namespace;
 import io.github.kronflow.core.model.enums.JobStatus;
 
 import java.util.List;
@@ -20,7 +19,15 @@ public interface JobStore {
 
     Optional<JobDefinition> findByNamespaceAndName(String namespaceId, String name);
 
-    List<JobDefinition> findByStatus(Namespace namespace, JobStatus status);
+    List<JobDefinition> findByStatus(String namespaceId, JobStatus status);
+
+    /**
+     * Critical for the JobSchedulerEngine polling loop.
+     * Finds jobs where status is ACTIVE and nextFireTime <= NOW.
+     *
+     * @param limit Max number of jobs to return in one batch to prevent OOM
+     */
+    List<JobDefinition> findDueJobs(int limit);
 
     void deleteById(String jobId);
 }

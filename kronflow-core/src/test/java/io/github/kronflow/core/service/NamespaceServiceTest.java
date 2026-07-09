@@ -56,7 +56,7 @@ class NamespaceServiceTest {
 
         @Test
         void shouldCreateAndPersistNamespace() {
-            when(namespaceStore.existsNamespaceByName(NAME)).thenReturn(false);
+            when(namespaceStore.existsByName(NAME)).thenReturn(false);
             when(idGenerator.generateId()).thenReturn(NS_ID);
 
             Namespace result = namespaceService.createNamespace(NAME, DESCRIPTION, CREATED_BY, UPDATED_BY);
@@ -76,7 +76,7 @@ class NamespaceServiceTest {
 
         @Test
         void shouldThrowDuplicateNameExceptionWhenNameAlreadyExists() {
-            when(namespaceStore.existsNamespaceByName(NAME)).thenReturn(true);
+            when(namespaceStore.existsByName(NAME)).thenReturn(true);
 
             DuplicateNameException ex = assertThrows(DuplicateNameException.class,
                     () -> namespaceService.createNamespace(NAME, DESCRIPTION, CREATED_BY, UPDATED_BY));
@@ -87,7 +87,7 @@ class NamespaceServiceTest {
 
         @Test
         void shouldUseIdFromIdGenerator() {
-            when(namespaceStore.existsNamespaceByName(NAME)).thenReturn(false);
+            when(namespaceStore.existsByName(NAME)).thenReturn(false);
             when(idGenerator.generateId()).thenReturn("generated-id-99");
 
             Namespace result = namespaceService.createNamespace(NAME, DESCRIPTION, CREATED_BY, UPDATED_BY);
@@ -97,7 +97,7 @@ class NamespaceServiceTest {
 
         @Test
         void shouldAllowNullDescription() {
-            when(namespaceStore.existsNamespaceByName(NAME)).thenReturn(false);
+            when(namespaceStore.existsByName(NAME)).thenReturn(false);
             when(idGenerator.generateId()).thenReturn(NS_ID);
 
             Namespace result = namespaceService.createNamespace(NAME, null, CREATED_BY, UPDATED_BY);
@@ -108,7 +108,7 @@ class NamespaceServiceTest {
 
         @Test
         void shouldNeverCallIdGeneratorWhenDuplicateNameDetected() {
-            when(namespaceStore.existsNamespaceByName(NAME)).thenReturn(true);
+            when(namespaceStore.existsByName(NAME)).thenReturn(true);
 
             assertThrows(DuplicateNameException.class,
                     () -> namespaceService.createNamespace(NAME, DESCRIPTION, CREATED_BY, UPDATED_BY));
@@ -127,7 +127,7 @@ class NamespaceServiceTest {
         @Test
         void shouldUpdateAllFieldsAndPersist() {
             when(namespaceStore.findById(NS_ID)).thenReturn(Optional.of(existingNamespace));
-            when(namespaceStore.existsNamespaceByName("new-name")).thenReturn(false);
+            when(namespaceStore.existsByName("new-name")).thenReturn(false);
 
             Namespace result = namespaceService.updateNameSpace(NS_ID, "new-name", "new-desc", UPDATED_BY);
 
@@ -136,7 +136,7 @@ class NamespaceServiceTest {
                     () -> assertEquals("new-desc", result.getDescription()),
                     () -> assertEquals(UPDATED_BY, result.getUpdatedBy())
             );
-            verify(namespaceStore).update(NS_ID, existingNamespace);
+            verify(namespaceStore).update(existingNamespace);
         }
 
         @Test
@@ -147,37 +147,37 @@ class NamespaceServiceTest {
                     () -> namespaceService.updateNameSpace(NS_ID, "new-name", "new-desc", UPDATED_BY));
 
             assertTrue(ex.getMessage().contains(NS_ID));
-            verify(namespaceStore, never()).update(any(), any());
+            verify(namespaceStore, never()).update(any());
         }
 
         @Test
         void shouldThrowDuplicateNameExceptionWhenNewNameTakenByAnotherNamespace() {
             when(namespaceStore.findById(NS_ID)).thenReturn(Optional.of(existingNamespace));
-            when(namespaceStore.existsNamespaceByName("taken-name")).thenReturn(true);
+            when(namespaceStore.existsByName("taken-name")).thenReturn(true);
 
             DuplicateNameException ex = assertThrows(DuplicateNameException.class,
                     () -> namespaceService.updateNameSpace(NS_ID, "taken-name", DESCRIPTION, UPDATED_BY));
 
             assertTrue(ex.getMessage().contains(NS_ID));
-            verify(namespaceStore, never()).update(any(), any());
+            verify(namespaceStore, never()).update(any());
         }
 
         @Test
         void shouldAllowUpdateWithSameNameWithoutDuplicateCheck() {
-            // same name → existsNamespaceByName must NOT be called
+            // same name → existsByName must NOT be called
             when(namespaceStore.findById(NS_ID)).thenReturn(Optional.of(existingNamespace));
 
             assertDoesNotThrow(() ->
                     namespaceService.updateNameSpace(NS_ID, NAME, "updated-desc", UPDATED_BY));
 
-            verify(namespaceStore, never()).existsNamespaceByName(NAME);
-            verify(namespaceStore).update(NS_ID, existingNamespace);
+            verify(namespaceStore, never()).existsByName(NAME);
+            verify(namespaceStore).update(existingNamespace);
         }
 
         @Test
         void shouldAllowNullDescriptionOnUpdate() {
             when(namespaceStore.findById(NS_ID)).thenReturn(Optional.of(existingNamespace));
-            when(namespaceStore.existsNamespaceByName("new-name")).thenReturn(false);
+            when(namespaceStore.existsByName("new-name")).thenReturn(false);
 
             Namespace result = namespaceService.updateNameSpace(NS_ID, "new-name", null, UPDATED_BY);
 

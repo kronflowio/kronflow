@@ -18,7 +18,7 @@ public class NamespaceService {
     }
 
     public Namespace createNamespace(String name, String description, String createdBy, String updatedBy) {
-        if (namespaceStore.existsNamespaceByName(name)) {
+        if (namespaceStore.existsByName(name)) {
             throw new DuplicateNameException(String.format("Namespace %s already exists", name));
         }
 
@@ -31,7 +31,7 @@ public class NamespaceService {
         Namespace namespace = namespaceStore.findById(namespaceId)
                 .orElseThrow(() -> new IllegalStateException(String.format("Namespace %s doesn't exist", namespaceId)));
 
-        if (!namespace.getName().equals(name) && namespaceStore.existsNamespaceByName(name)) {
+        if (!namespace.getName().equals(name) && namespaceStore.existsByName(name)) {
             throw new DuplicateNameException(String.format("Namespace %s already exists", namespaceId));
         }
 
@@ -39,7 +39,7 @@ public class NamespaceService {
         namespace.updateDescription(description);
         namespace.modifyUpdatedBy(updatedBy);
 
-        namespaceStore.update(namespaceId, namespace);
+        namespaceStore.update(namespace);
         return namespace;
     }
 
